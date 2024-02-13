@@ -12,7 +12,7 @@ const sendFeedbackMetric = async (isPositive: boolean = false) => {
   const params: any = {
     MetricData: [
       {
-        MetricName: "Sentiment",
+        MetricName: "Segment",
         Dimensions: [
           {
             Name: "Feedback",
@@ -37,15 +37,15 @@ const sendFeedbackMetric = async (isPositive: boolean = false) => {
 
 type SUBMIT_FEEDBACK_INPUT = {
   text: string,
-  sentiment: number,
+  segment: number,
   feedback: boolean
 }
 
 // Create a new feedback to DynamoDB
-export const submitFeedback = async ({ text, sentiment, feedback }: SUBMIT_FEEDBACK_INPUT) => {
+export const submitFeedback = async ({ text, segment, feedback }: SUBMIT_FEEDBACK_INPUT) => {
   const input:any = {
     RequestItems: {
-      ["sentiment-feedback"]: [
+      ["segment-feedback"]: [
         {
           PutRequest: {
             Item: {
@@ -58,8 +58,8 @@ export const submitFeedback = async ({ text, sentiment, feedback }: SUBMIT_FEEDB
               text: {
                 S: text || "",
               },
-              sentiment: {
-                N: sentiment.toString() || "",
+              segment: {
+                N: segment.toString() || "",
               },
               feedback: {
                 BOOL: feedback,

@@ -7,7 +7,7 @@ import { dynamoDBClient, returnData } from "./helper"
 
 // Get the latest 20 feedbacks
 export const getFeedbacks = async () => {
-    const tableName = process.env.TABLE_NAME || "sentiment-feedback";
+    const tableName = process.env.TABLE_NAME || "segment-feedback";
 
     // DynamoDB Query
     const command = new QueryCommand({
@@ -33,7 +33,7 @@ export const getFeedbacks = async () => {
             success: true, items: results.Items?.map(e => ({
                 text: e.text.S,
                 timestamp: e.timestamp.N,
-                sentiment: e.sentiment.N,
+                segment: e.segment.N,
                 feedback: e.feedback.BOOL
             }))
         }

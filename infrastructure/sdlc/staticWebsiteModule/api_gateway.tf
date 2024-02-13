@@ -35,7 +35,7 @@ resource "aws_api_gateway_integration" "feedback" {
   uri                     = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${aws_lambda_function.feedback_api.arn}/invocations"
 }
 
-// Sentiment
+// Segment
 resource "aws_api_gateway_resource" "segment" {
   rest_api_id = aws_api_gateway_rest_api.website.id
   parent_id   = aws_api_gateway_rest_api.website.root_resource_id
@@ -55,23 +55,23 @@ resource "aws_api_gateway_integration" "segment" {
   http_method             = aws_api_gateway_method.segment.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${aws_lambda_function.sentiment_api.arn}/invocations"
+  uri                     = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${aws_lambda_function.segment_api.arn}/invocations"
 }
 
 # CORS (Localhost usage)
 
-resource "aws_api_gateway_method" "sentiment_options" {
+resource "aws_api_gateway_method" "segment_options" {
   rest_api_id   = aws_api_gateway_rest_api.website.id
   resource_id   = aws_api_gateway_resource.segment.id
   http_method   = "OPTIONS"
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "sentiment_options" {
+resource "aws_api_gateway_integration" "segment_options" {
   depends_on              = [aws_api_gateway_integration.segment]
   rest_api_id             = aws_api_gateway_rest_api.website.id
   resource_id             = aws_api_gateway_resource.segment.id
-  http_method             = aws_api_gateway_method.sentiment_options.http_method
+  http_method             = aws_api_gateway_method.segment_options.http_method
   type                    = "MOCK"
 
   request_templates = {
@@ -81,10 +81,10 @@ EOF
   }
 }
 
-resource "aws_api_gateway_method_response" "sentiment_options" {
+resource "aws_api_gateway_method_response" "segment_options" {
   rest_api_id = aws_api_gateway_rest_api.website.id
   resource_id = aws_api_gateway_resource.segment.id
-  http_method = aws_api_gateway_method.sentiment_options.http_method
+  http_method = aws_api_gateway_method.segment_options.http_method
   status_code = "200"
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = true
@@ -93,12 +93,12 @@ resource "aws_api_gateway_method_response" "sentiment_options" {
   }
 }
 
-resource "aws_api_gateway_integration_response" "sentiment_options" {
-  depends_on  = [aws_api_gateway_integration.sentiment_options, aws_api_gateway_method_response.sentiment_options]
+resource "aws_api_gateway_integration_response" "segment_options" {
+  depends_on  = [aws_api_gateway_integration.segment_options, aws_api_gateway_method_response.segment_options]
   rest_api_id = aws_api_gateway_rest_api.website.id
   resource_id = aws_api_gateway_resource.segment.id
-  http_method = aws_api_gateway_method.sentiment_options.http_method
-  status_code = aws_api_gateway_method_response.sentiment_options.status_code
+  http_method = aws_api_gateway_method.segment_options.http_method
+  status_code = aws_api_gateway_method_response.segment_options.status_code
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"

@@ -1,5 +1,5 @@
 # Define the name of the GitHub Action
-name: Deploy Sentiment API
+name: Deploy segment API
 
 # Define the events that will trigger the action
 on:
@@ -15,7 +15,7 @@ env:
   PROD_ACCOUNT_ID: 258317103062
   ASSUME_ROLE_ARN_DEV: arn:aws:iam::267341338450:role/github-dev--segment
   ASSUME_ROLE_ARN_PROD: arn:aws:iam::258317103062:role/github-prod--segment
-  LAMBDA_FUNCTION: sentiment_api
+  LAMBDA_FUNCTION: segment_api
 
 # Define permissions required for the action
 permissions:
@@ -24,7 +24,7 @@ permissions:
 
 # Define the jobs to be executed in the action
 jobs:
-  sentiment-api:
+  segment-api:
     # Define the operating system the action will run on
     runs-on: ubuntu-latest
 
@@ -50,7 +50,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd api/sentiment
+          cd api/segment
           pip install -r requirements.txt
          
       - name: Prepare AWS
@@ -74,14 +74,14 @@ jobs:
           source setup.env
 
           echo "Building..."
-          cd api/sentiment
+          cd api/segment
 
           rm -rf artifacts mlruns
           aws s3 cp "s3://artifact-dev.segment.parf.ai/$API_ARTIFACT_PATH" ./ --recursive
           
       - name: Unit test python
         run: |
-          cd api/sentiment
+          cd api/segment
           python -m unittest unit_test.py 
           
       - name: Build & Push Docker to AWS ECR
@@ -91,7 +91,7 @@ jobs:
           echo $(aws sts get-caller-identity)
 
           echo "Building..."
-          cd api/sentiment
+          cd api/segment
           
           export IMG_VERSION=latest
           docker logout public.ecr.aws

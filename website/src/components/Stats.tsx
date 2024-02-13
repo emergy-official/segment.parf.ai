@@ -52,7 +52,7 @@ export default function Stats() {
                     {expandedRows.includes(index) ? item.text : item.text.slice(0, 50)}
                     {item.text.length > 50 && !expandedRows.includes(index) && '...'}
                   </td>
-                  <td>{item.sentiment >= 0.5 ? "Positive" : "Negative"}</td>
+                  <td>{item.segment >= 0.5 ? "Positive" : "Negative"}</td>
                   <td>{item.feedback ? '✅' : '❌'}</td>
                 </tr>
               ))}

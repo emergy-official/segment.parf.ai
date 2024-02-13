@@ -34,24 +34,24 @@ def pad_sequences(sequence, maxlen, value=0):
   
 def predict(text_to_predict):  
     """  
-    Predicts the sentiment for the given text.  
+    Predicts the segment for the given text.  
       
     Args:  
         text_to_predict (list of str): List containing text to predict.  
           
     Returns:  
-        float: The predicted sentiment represented as a float.  
+        float: The predicted segment represented as a float.  
     """  
     # Transform text to a sequence of integers using the loaded tokenizer  
     sequence = tokenizer.texts_to_sequences(text_to_predict)  
     # Pad these sequences to ensure uniform length  
     padded_sequence = pad_sequences(sequence, maxlen=int(params["input_length"]))  
-    # Predict sentiment using the loaded model  
+    # Predict segment using the loaded model  
     prediction = model.predict(padded_sequence)  
-    # Extract the sentiment value from the prediction  
-    sentiment = prediction.astype(float)[0][0]  
+    # Extract the segment value from the prediction  
+    segment = prediction.astype(float)[0][0]  
     # Convert to native Python datatype and return  
-    return sentiment.item()  
+    return segment.item()  
     
 def handler(event, context):  
     """  
@@ -69,8 +69,8 @@ def handler(event, context):
     text = body['text']  
     # Log the text to predict  
     print("Predicting...", text)  
-    # Return the HTTP response with the predicted sentiment  
+    # Return the HTTP response with the predicted segment  
     return {  
         'statusCode': 200,  
-        'body': json.dumps({'sentiment': predict([text])})  
+        'body': json.dumps({'segment': predict([text])})  
     }  

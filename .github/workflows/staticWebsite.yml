@@ -13,11 +13,11 @@ env:
   AWS_REGION: us-east-1
   DEV_ACCOUNT_ID: 267341338450
   PROD_ACCOUNT_ID: 258317103062
-  ASSUME_ROLE_ARN_DEV: arn:aws:iam::267341338450:role/github-dev--sentiment
-  ASSUME_ROLE_ARN_PROD: arn:aws:iam::258317103062:role/github-prod--sentiment
+  ASSUME_ROLE_ARN_DEV: arn:aws:iam::267341338450:role/github-dev--segment
+  ASSUME_ROLE_ARN_PROD: arn:aws:iam::258317103062:role/github-prod--segment
   WEBSITE_FOLDER: website
-  LAMBDA_FUNCTION_FEEDBACK: sentiment_feedback_api
-  LAMBDA_FUNCTION_EMAIL: sentiment_email_alert
+  LAMBDA_FUNCTION_FEEDBACK: segment_feedback_api
+  LAMBDA_FUNCTION_EMAIL: segment_email_alert
   FEEDBACK_API_FOLDER: api/feedback
 
 # Define permissions required for the action

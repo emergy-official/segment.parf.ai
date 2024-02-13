@@ -21,7 +21,7 @@ The response time should be ~200ms per request after coldstart.
 const request = require("request");
 let options = {
   method: "GET",
-  url: "https://dev.segment.parf.ai/api/sentiment/feedback",
+  url: "https://dev.segment.parf.ai/api/segment/feedback",
 };
 request(options, (error, response) => {
   if (error) throw new Error(error);
@@ -38,7 +38,7 @@ Response example
         {
             "text": "The mirror is my best friend because when I cry 😭 it never laughs😂.",
             "timestamp": "1707494974834",
-            "sentiment": "0.9879910945892334",
+            "segment": "0.9879910945892334",
             "feedback": true
         },
         ...
@@ -52,13 +52,13 @@ Response example
 const request = require("request");
 let options = {
   method: "POST",
-  url: "https://segment.parf.ai/api/sentiment/feedback",
+  url: "https://segment.parf.ai/api/segment/feedback",
   headers: {
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
     text: "I am so sad, this is very bad news, terrible!",
-    sentiment: 0.88,
+    segment: 0.88,
     feedback: false,
   }),
 };

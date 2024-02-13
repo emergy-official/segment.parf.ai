@@ -1,8 +1,8 @@
 # Create Lambda function to perform CRUD operations on DynamoDB table    
-resource "aws_lambda_function" "sentiment_api" {
+resource "aws_lambda_function" "segment_api" {
   function_name = "${var.prefix}_api"
   package_type  = "Image"
-  role          = aws_iam_role.lambda_exec_sentiment_api.arn
+  role          = aws_iam_role.lambda_exec_segment_api.arn
   image_uri     = "${aws_ecr_repository.python_scikit_learn.repository_url}:latest"
 
   timeout     = 120
@@ -13,14 +13,14 @@ resource "aws_lambda_function" "sentiment_api" {
   }
 }
 
-resource "aws_cloudwatch_log_group" "sentiment_api" {
-  name              = "/aws/lambda/${aws_lambda_function.sentiment_api.function_name}"
+resource "aws_cloudwatch_log_group" "segment_api" {
+  name              = "/aws/lambda/${aws_lambda_function.segment_api.function_name}"
   retention_in_days = 3
 }
 
 # IAM role for the Lambda function to access necessary resources  
-resource "aws_iam_role" "lambda_exec_sentiment_api" {
-  name = "${var.prefix}_lambda_exec_sentiment_api"
+resource "aws_iam_role" "lambda_exec_segment_api" {
+  name = "${var.prefix}_lambda_exec_segment_api"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -36,9 +36,9 @@ resource "aws_iam_role" "lambda_exec_sentiment_api" {
   })
 }
 
-resource "aws_iam_role_policy" "lambda_exec_policy_sentiment_api" {
-  name = "${var.prefix}_lambda_exec_policy_sentiment_api"
-  role = aws_iam_role.lambda_exec_sentiment_api.id
+resource "aws_iam_role_policy" "lambda_exec_policy_segment_api" {
+  name = "${var.prefix}_lambda_exec_policy_segment_api"
+  role = aws_iam_role.lambda_exec_segment_api.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -56,10 +56,10 @@ resource "aws_iam_role_policy" "lambda_exec_policy_sentiment_api" {
   })
 }
 
-resource "aws_lambda_permission" "api_gateway_sentiment" {
-  statement_id  = "AllowAPIGatewayInvokeSentiment"
+resource "aws_lambda_permission" "api_gateway_segment" {
+  statement_id  = "AllowAPIGatewayInvokeSegment"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.sentiment_api.arn
+  function_name = aws_lambda_function.segment_api.arn
   principal     = "apigateway.amazonaws.com"
 
   # If you have set up an AWS Account Alias, use this line instead  

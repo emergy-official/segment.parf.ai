@@ -10,7 +10,7 @@ test('Get feedback', async () => {
 
 // Test sending feedback values
 test('Send feedback', async () => {
-    const response = await submitFeedback({ text: "Test text", sentiment: 0.3, feedback: false });
+    const response = await submitFeedback({ text: "Test text", segment: 0.3, feedback: false });
     const body: any = JSON.parse(response.body)
     expect(body.success).toBe(true)
 });

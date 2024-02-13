@@ -11,7 +11,7 @@ resource "aws_iam_role_policy" "update_lambda_policy" {
           "lambda:UpdateFunctionCode"
         ],
         "Resource" : [
-          "${aws_lambda_function.sentiment_api.arn}",
+          "${aws_lambda_function.segment_api.arn}",
           "${aws_lambda_function.feedback_api.arn}"
         ]
       }

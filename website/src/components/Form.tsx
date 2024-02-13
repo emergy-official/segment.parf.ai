@@ -56,7 +56,7 @@ export default function Form() {
     setShowFeedback(false)
     const res = await sendPredictRequest(text)
     if (res) {
-      setPrediction(res.sentiment)
+      setPrediction(res.segment)
     }
     setLoadingPrediction(false)
   };
@@ -86,7 +86,7 @@ export default function Form() {
 
   return (
     <div class="form">
-      <h1>Sentiment analyzer</h1>
+      <h1>Segment analyzer</h1>
       <textarea onInput={handleInput} value={text} maxLength={280}></textarea>
       {prediction == -1 ?
         !isStarted ? 

@@ -2,11 +2,11 @@
 
 ## Introduction
 
-This API allows a user to get a sentiment prediction of a text (positive or negative).
+This API allows a user to get a segment prediction of a text (positive or negative).
 
 The user can:
 
-- Get the sentiment of a text
+- Get the segment of a text
 - Submit a feedback if the model is correct/incorrect
 - Get the latest feedbacks
 
@@ -23,6 +23,6 @@ The API is built within Github actions, it is deployed automatically if the unit
 
 - Check the readme within [api/feedback](./feedback/readme.md)
 
-### Sentiment (Python)
+### Segment (Python)
 
-- Check the readme within  [api/sentiment](./sentiment/readme.md)
+- Check the readme within  [api/segment](./segment/readme.md)

@@ -1,12 +1,12 @@
 # Segment.parf.ai
 
-![](./sentiment-1.png)
+![](./segment-1.png)
 
 ## Introduction
 
-This project analyze sentiment of a text and predict between 0 to 1 if a text is wether positive or negative.
+This project analyze segment of a text and predict between 0 to 1 if a text is wether positive or negative.
 
-You can read [this blog post](https://blog.parf.ai/posts/sentiment/) to know more about it.
+You can read [this blog post](https://blog.parf.ai/posts/segment/) to know more about it.
 
 - **PROD**: https://segment.parf.ai/
 - **DEV**: https://dev.segment.parf.ai/

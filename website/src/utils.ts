@@ -11,7 +11,7 @@ export const getRandomElement = (arr: any) => {
 export const getLatestFeedbacks = async (feedbackStore: any, showFeedbackLoading: any) => {
     try {
         showFeedbackLoading.set(true)
-        const res: any = await axios.get(`${getAPIURL()}/sentiment/feedback`)
+        const res: any = await axios.get(`${getAPIURL()}/segment/feedback`)
         if (res?.data?.items) {
             feedbackStore.set(res?.data?.items)
         }
@@ -34,7 +34,7 @@ export const startLambda = async (isStarted: any, setIsStarted: any) => {
             console.log(`Attempt ${attempt}`)
             const timeout = attempt === 0 ? 180000 : 20000;
             const res: any = await sendPredictRequest("any text here to start the lambda to improve speed for future request", true, timeout);
-            if (res?.sentiment > -1) {
+            if (res?.segment > -1) {
                 setIsStarted(true);
                 return;  // Successful, exit the function  
             }
@@ -56,7 +56,7 @@ export const sendPredictRequest = async (text: string, throwError: boolean = fal
     try {
         const res: any = await axios({
             method: "post",
-            url: `${getAPIURL()}/sentiment`,
+            url: `${getAPIURL()}/segment`,
             data: { text },
             timeout
         })
@@ -72,9 +72,9 @@ export const sendPredictRequest = async (text: string, throwError: boolean = fal
     }
 }
 
-export const sendFeedbackRequest = async (text: string, sentiment: number, feedback: boolean) => {
+export const sendFeedbackRequest = async (text: string, segment: number, feedback: boolean) => {
     try {
-        const res: any = await axios.post(`${getAPIURL()}/sentiment/feedback`, { text, sentiment, feedback })
+        const res: any = await axios.post(`${getAPIURL()}/segment/feedback`, { text, segment, feedback })
         return res?.data
     } catch (e) {
         console.error("Error", e)

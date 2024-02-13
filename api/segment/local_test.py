@@ -30,26 +30,26 @@ def pad_sequences(sequence, maxlen, value=0):
     return np.array([np.pad(s[:maxlen], (max(0, maxlen-len(s)), 0), 'constant', constant_values=value)  
                      if len(s) < maxlen else s[:maxlen] for s in sequence])  
   
-# Function to predict the sentiment of a comment  
+# Function to predict the segment of a comment  
 def predict(comment, model, vector_model):  
     """  
-    Predicts the sentiment for the given text.  
+    Predicts the segment for the given text.  
       
     Args:  
         text_to_predict (list of str): List containing text to predict.  
           
     Returns:  
-        float: The predicted sentiment represented as a float.  
+        float: The predicted segment represented as a float.  
     """
     # Tokenize the comment text  
     sequence = vector_model.texts_to_sequences([comment])  
     # Pad the resulted sequence  
     padded_sequence = pad_sequences(sequence, maxlen=int(params["input_length"]))  
   
-    # Predict the sentiment  
+    # Predict the segment  
     prediction = model.predict(padded_sequence)  
-    sentiment = prediction.astype(float)[0][0]  
-    return sentiment.item()  
+    segment = prediction.astype(float)[0][0]  
+    return segment.item()  
   
 # Example usage of the predict function with three different comments  
 print(predict("I am so sad, this is very bad news, terrible!", model, tokenizer_w2vec))  

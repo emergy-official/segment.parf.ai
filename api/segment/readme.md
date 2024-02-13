@@ -94,8 +94,8 @@ eval $(aws sts assume-role --profile $INFRA_ACCOUNT_ID --role-arn "arn:aws:iam::
 # Download the artifact
 rm -rf artifacts
 export FILE_PATH="657967221979013195/2f2f781caad24db9bbc386eef1fbde7b"
-aws s3 cp "s3://artifact-dev.segment.parf.ai/$FILE_PATH" ./artifacts --recursive
-aws s3 cp artifacts "s3://artifact-dev.segment.parf.ai" --recursive
+aws s3 cp "s3://artifact-dev.segment.parf.ai/$FILE_PATH" ./ --recursive
+aws s3 cp artifacts "s3://artifact-dev.segment.parf.ai/657967221979013195/2f2f781caad24db9bbc386eef1fbde7b/artifacts" --recursive
 
 # Login to AWS ECR to push docker
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin "$ACCOUNT_ID".dkr.ecr.us-east-1.amazonaws.com/

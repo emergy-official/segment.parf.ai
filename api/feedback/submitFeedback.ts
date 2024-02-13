@@ -2,38 +2,7 @@
 import {
   BatchWriteItemCommand,
 } from "@aws-sdk/client-dynamodb";
-import {
-  PutMetricDataCommand,
-} from "@aws-sdk/client-cloudwatch";
-import { dynamoDBClient, cloudWatchClient, wait, returnData } from "./helper"
-
-// Sent the metrics to cloudwatch
-const sendFeedbackMetric = async (isPositive: boolean = false) => {
-  const params: any = {
-    MetricData: [
-      {
-        MetricName: "Segment",
-        Dimensions: [
-          {
-            Name: "Feedback",
-            Value: isPositive ? "Positive" : "Negative",
-          },
-        ],
-        Unit: "Count",
-        Value: 1,
-      },
-    ],
-    Namespace: "segment.parf.ai",
-  };
-  const command = new PutMetricDataCommand(params);
-
-  try {
-    const data = await cloudWatchClient.send(command);
-    console.log("Metric sent");
-  } catch (err) {
-    throw err
-  }
-};
+import { dynamoDBClient, wait, returnData } from "./helper"
 
 type SUBMIT_FEEDBACK_INPUT = {
   text: string,
@@ -90,7 +59,6 @@ export const submitFeedback = async ({ text, segment, feedback }: SUBMIT_FEEDBAC
     }
   }
   try {
-    await sendFeedbackMetric(feedback)
   } catch (error: any) {
     response = { success: false, message: error?.message };
   }

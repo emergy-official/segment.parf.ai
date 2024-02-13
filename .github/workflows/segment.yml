@@ -78,7 +78,7 @@ jobs:
 
           rm -rf artifacts mlruns
           aws s3 cp "s3://artifact-dev.segment.parf.ai/$API_ARTIFACT_PATH" ./ --recursive
-          
+          echo "Download done"
       - name: Unit test python
         run: |
           cd api/segment

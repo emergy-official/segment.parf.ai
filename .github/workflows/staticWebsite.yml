@@ -17,7 +17,6 @@ env:
   ASSUME_ROLE_ARN_PROD: arn:aws:iam::258317103062:role/github-prod--segment
   WEBSITE_FOLDER: website
   LAMBDA_FUNCTION_FEEDBACK: segment_feedback_api
-  LAMBDA_FUNCTION_EMAIL: segment_email_alert
   FEEDBACK_API_FOLDER: api/feedback
 
 # Define permissions required for the action
@@ -128,7 +127,6 @@ jobs:
           
           cd ../api/dist/feedback-lambda && zip -r ../api.zip ./* && cd ..
           aws lambda update-function-code --function-name $LAMBDA_FUNCTION_FEEDBACK --zip-file fileb://api.zip  
-          aws lambda update-function-code --function-name $LAMBDA_FUNCTION_EMAIL --zip-file fileb://api.zip  
           
           echo "Clear the cache"
           echo export DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{id:Id,origin:Origins.Items[0].Id}[?origin=='${{ env.DYNAMIC_DOMAIN_NAME }}'].id" --output text)

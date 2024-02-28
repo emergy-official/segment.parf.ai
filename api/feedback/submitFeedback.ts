@@ -9,7 +9,6 @@ type SUBMIT_FEEDBACK_INPUT = {
   segment: number,
   feedback: boolean
 }
-
 // Create a new feedback to DynamoDB
 export const submitFeedback = async ({ text, segment, feedback }: SUBMIT_FEEDBACK_INPUT) => {
   const input:any = {

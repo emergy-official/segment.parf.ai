@@ -1,0 +1,10 @@
+tensorflow==2.15.0
+opencv-python
+numpy
+matplotlib
+pillow
+scikit-learn
+pandas
+boto3
+joblib
+python-dotenv  

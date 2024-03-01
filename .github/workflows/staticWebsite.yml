@@ -16,8 +16,6 @@ env:
   ASSUME_ROLE_ARN_DEV: arn:aws:iam::267341338450:role/github-dev--segment
   ASSUME_ROLE_ARN_PROD: arn:aws:iam::258317103062:role/github-prod--segment
   WEBSITE_FOLDER: website
-  LAMBDA_FUNCTION_API: segment_api
-  API_FOLDER: api/segment
 
 # Define permissions required for the action
 permissions:
@@ -55,10 +53,6 @@ jobs:
           npm config set "@fortawesome:registry" https://npm.fontawesome.com/
           npm config set "//npm.fontawesome.com/:_authToken" ${{ secrets.FONT_AWESOME_TOKEN }}
           cd $WEBSITE_FOLDER && npm install
-
-      - name: Install Node.js module dependencies - feedback api
-        run: |
-          cd $API_FOLDER && npm install
 
       - name: Prepare AWS
         run: |
@@ -111,9 +105,6 @@ jobs:
           echo "Copying to S3"
           cd $WEBSITE_FOLDER 
           aws s3 cp ./dist/ s3://${{ env.DYNAMIC_DOMAIN_NAME }}/ --recursive --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers --cache-control max-age=31536000,public
-          
-          cd ../api/dist/feedback-lambda && zip -r ../api.zip ./* && cd ..
-          aws lambda update-function-code --function-name $LAMBDA_FUNCTION_API --zip-file fileb://api.zip  
           
           echo "Clear the cache"
           echo export DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{id:Id,origin:Origins.Items[0].Id}[?origin=='${{ env.DYNAMIC_DOMAIN_NAME }}'].id" --output text)

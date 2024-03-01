@@ -1,6 +1,5 @@
 # Define the name of the GitHub Action
 name: Deploy Website & Segment API
-
 # Define the events that will trigger the action
 on:
   push:

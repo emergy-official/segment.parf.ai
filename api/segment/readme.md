@@ -1,88 +1,91 @@
-# Segment.parf.ai - Segment API
+# Segment.parf.ai - Feedback API
 
 ## Introduction
 
-The segment API returns the segment prediction of a text from a trained model.  
-It loads the tokenizer & model that were previously trained and predicts a given text.
+The feedback API allows a user to improve the model over time to teach it what is correct/incorrect.  
+You can either get the latest 20 feedbacks or submit a feedback.
 
-This API is executed on AWS Lambda through a Docker container.  
-Using free tier, the first execution will take ~30sec-1min time to start and will then stop after ~15min of inactiivty. (reserved concurrency lambda makes it always available for some $$)
+This API is executed on AWS Lambda in the `NodeJS20.x` runtime.
+Using free tier, the first execution will take ~5sec time to start and will then stop after ~15min of inactiivty. (reserved concurrency lambda makes it always available for some $$)
 
-The response time should be ~300ms per request after coldstart.
+The response time should be ~200ms per request after coldstart.
 
 ## API Usage example
 
 - Prod: https://segment.parf.ai/api
 - Dev: https://dev.segment.parf.ai/api
 
-### Get segment response
+### Get the latest 20 feedbacks
 
 ```js
-var request = require("request");
-var options = {
-  method: "POST",
-  url: "https://dev.segment.parf.ai/api/segment",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    text: "I am so happy, this is very good news, congrats!",
-  }),
+const request = require("request");
+let options = {
+  method: "GET",
+  url: "https://dev.segment.parf.ai/api/segment/feedback",
 };
-
-request(options, function (error, response) {
+request(options, (error, response) => {
   if (error) throw new Error(error);
   console.log(response.body);
 });
 ```
 
 Response example
+
 ```json
 {
-    "segment": 0.9474098682403564
+    "success": true,
+    "items": [
+        {
+            "text": "The mirror is my best friend because when I cry 😭 it never laughs😂.",
+            "timestamp": "1707494974834",
+            "segment": "0.9879910945892334",
+            "feedback": true
+        },
+        ...
+    ]
+}
+```
+
+### Post a feedback
+
+```js
+const request = require("request");
+let options = {
+  method: "POST",
+  url: "https://segment.parf.ai/api/segment/feedback",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    text: "I am so sad, this is very bad news, terrible!",
+    segment: 0.88,
+    feedback: false,
+  }),
+};
+request(options, (error, response) => {
+  if (error) throw new Error(error);
+  console.log(response.body);
+});
+```
+
+Response example
+
+```json
+{
+  "success": true
 }
 ```
 
 ## How to test locally
 
-In order to test locally you need to have the following structure:
+```bash
+# Go within the feedback api
+cd api/feedback
 
-```sh
-# within api/segment
+# Install dependencies (using pnpm or npm, yarn, ...)
+pnpm install
 
-- artifacts
-  - model.pkl
-  - params.json
-  - tokenizer.pkl
-```
-
-The artifacts are available after each experiments on MLFlow.  
-The MLFlow server run locally and push the artifacts to S3 in order to reuse them within Github actions
-
-```sh
-
-# Create the environment
-conda create -p venv python=3.11.7 -y
-
-# Use the environment
-conda activate venv/
-
-# Install dependencies
-pip install -r requirements.txt
-
-# feel free to modify the text
-python local_test.py 
-
-# Start unit test, the one used by Github actions
-python -m unittest unit_test.py
-```
-
-## How to build & push the docker locally
-
-```sh
-cd api/segment
-
-# Authentication
+# Authentication to allow using DB queries and email sending
 export DEV_ACCOUNT_ID=REPLACE_ME
 export PROD_ACCOUNT_ID=REPLACE_ME
 export INFRA_ACCOUNT_ID=REPLACE_ME
@@ -91,44 +94,30 @@ export ACCOUNT_ID=$DEV_ACCOUNT_ID
 # Login from infra account to dev account
 eval $(aws sts assume-role --profile $INFRA_ACCOUNT_ID --role-arn "arn:aws:iam::"$ACCOUNT_ID":role/provision" --role-session-name AWSCLI-Session | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
 
-# Download the artifact
-rm -rf artifacts
-export FILE_PATH="657967221979013195/2f2f781caad24db9bbc386eef1fbde7b"
-aws s3 cp "s3://artifact-dev.segment.parf.ai/$FILE_PATH" ./ --recursive
-aws s3 cp artifacts "s3://artifact-dev.segment.parf.ai/657967221979013195/2f2f781caad24db9bbc386eef1fbde7b/artifacts" --recursive
+# Run test
+npm run test
+```
 
-# Login to AWS ECR to push docker
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin "$ACCOUNT_ID".dkr.ecr.us-east-1.amazonaws.com/
+If you need to build the lambda layer for the infrastructure and push it locally
+```sh
+# Go within the feedback api
+cd api/feedback
 
-# Tag version image to latest
-export IMG_VERSION=latest
-
-# Logout to the public ECR to make sure that the private publish won't fail
-docker logout public.ecr.aws
-
-# Build the image
-docker build --platform linux/amd64 -t python-scikit-learn:$IMG_VERSION .
-
-# Tag the image so you can push it to AWS ECR (private repo)
-docker tag python-scikit-learn:$IMG_VERSION "$ACCOUNT_ID".dkr.ecr.us-east-1.amazonaws.com/segment-python-scikit-learn:latest
-
-# Push the image
-docker push "$ACCOUNT_ID".dkr.ecr.us-east-1.amazonaws.com/segment-python-scikit-learn:latest
-
-# Update the lambda to use the new image
-aws lambda update-function-code --function-name segment_api --image-uri "$ACCOUNT_ID".dkr.ecr.us-east-1.amazonaws.com/segment-python-scikit-learn:latest --region us-east-1
-
-## OPTIONNAL: RUN THE DOCKER ImageLOCALLY
-
-docker run --platform linux/amd64 -p 9000:8080 python-scikit-learn:$IMG_VERSION
-
-curl "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"body": "{\"text\":\"I am so happy this is great news, congrats!\"}"}'
+# Create the lambda layer ready to be used by terraform
+npm run prepare:layer
 ```
 
 ## Structure
 
-- **Dockerfile**: To build the container
-- **lambda_function**: Python script invoked by the API
-- **local_test.py**: Python script to test the segment locally
-- **requirements.txt**: Libraries used
-- **unit_test.py**: Unit test done within Github actions
+**Scripts and Configuration Files**
+
+- **feedback.test.ts**: Unit test done within Github actions
+- **getFeedbacks.ts**: Script to gather feedbacks within DynamoDB
+- **submitFeedback.ts**: Script to send a feedback of a text
+- **helper.ts**: Reusable functions to share accross other scripts.
+- **index.ts**: Script invoked by the API
+
+**Configuration and Package Management**
+- **package.json**: Libraries used
+- **pnpm-lock.yaml**: By PNPM to reuse the same versions
+- **tsconfig.json**: Typescript config

@@ -37,3 +37,5 @@ tmp_*
 __pycache__
 venv
 artifacts
+*.h5
+*.keras

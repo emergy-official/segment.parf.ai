@@ -1,14 +1,19 @@
 # Create Lambda function to perform CRUD operations on DynamoDB table    
 resource "aws_lambda_function" "segment_api" {
   function_name = "${var.prefix}_api"
-  package_type  = "Image"
+  handler       = "index.handler"
   role          = aws_iam_role.lambda_exec_segment_api.arn
-  image_uri     = "${aws_ecr_repository.python_scikit_learn.repository_url}:latest"
+  runtime       = "nodejs20.x"
+  filename      = data.archive_file.lambda_segment_zip.output_path
+  # Do not update the lambda, it will be done by Github CI/CD
+  source_code_hash = data.archive_file.lambda_segment_zip.output_base64sha256
+  layers           = [aws_lambda_layer_version.lambda_segment_api_lambda_layer.arn]
 
-  timeout     = 120
-  memory_size = 1024
+  timeout     = 60
+  memory_size = 128
   environment {
     variables = {
+      INFERANCE_NAME = aws_sagemaker_endpoint.api.name
     }
   }
 }
@@ -56,8 +61,44 @@ resource "aws_iam_role_policy" "lambda_exec_policy_segment_api" {
   })
 }
 
+resource "aws_iam_role_policy" "lambda_exec_policy_segment_api_db" {
+  name = "${var.prefix}_lambda_exec_sagemaker_endpoint"
+  role = aws_iam_role.lambda_exec_segment_api.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "sagemaker:InvokeEndpoint",
+        ]
+        Effect   = "Allow"
+        Resource = aws_sagemaker_endpoint.api.arn
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "lambda_exec_policy_segment_api_metrics" {
+  name = "${var.prefix}_lambda_exec_policy_segment_api_metrics"
+  role = aws_iam_role.lambda_exec_segment_api.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "cloudwatch:PutMetricData"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]
+  })
+}
+
 resource "aws_lambda_permission" "api_gateway_segment" {
-  statement_id  = "AllowAPIGatewayInvokeSegment"
+  statement_id  = "AllowAPIGatewayInvokesegment"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.segment_api.arn
   principal     = "apigateway.amazonaws.com"
@@ -66,4 +107,31 @@ resource "aws_lambda_permission" "api_gateway_segment" {
   # source_arn = "arn:aws:execute-api:${var.region_name}:${var.aws_account_id}:${aws_api_gateway_rest_api.example.id}/${aws_api_gateway_deployment.example.stage_name}/ANY/RESOURCE_PATH"  
 
   source_arn = "arn:aws:execute-api:${var.region_name}:${var.aws_account_id}:${aws_api_gateway_rest_api.website.id}/*/*/*"
+}
+
+# Code of the lambda functions
+data "archive_file" "lambda_segment_zip" {
+  type        = "zip"
+  source_dir  = "${var.api_path}/dist/segment-lambda"
+  output_path = "${var.api_path}/dist/segment-lambda.zip"
+}
+
+
+# Code of the lambda layer
+data "archive_file" "lambda_segment_api_lambda_layer" {
+  type        = "zip"
+  source_dir  = "${var.api_path}/dist/nodejs"
+  output_path = "${var.api_path}/dist/nodejs.zip"
+}
+
+# Create the Lambda layer  
+resource "aws_lambda_layer_version" "lambda_segment_api_lambda_layer" {
+  layer_name          = "${var.prefix}_segment_lambda_layer"
+  filename            = data.archive_file.lambda_segment_api_lambda_layer.output_path
+  source_code_hash    = filebase64sha256(data.archive_file.lambda_segment_api_lambda_layer.output_path)
+  compatible_runtimes = ["nodejs20.x"]
+}
+
+resource "aws_sns_topic" "negative_segment_alarm_topic" {  
+  name = "${var.prefix}-negative-segment-alarm-topic"  
 }

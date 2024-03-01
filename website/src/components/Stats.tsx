@@ -1,5 +1,4 @@
 import { useState, useEffect } from "preact/hooks";
-import { getLatestFeedbacks } from "../utils";
 import { feedbacks, showFeedbackLoading } from "./../stores/feedbacks"
 import { useStore } from '@nanostores/preact';
 import DivergingBarChart from './../components/DivergingBarChart';

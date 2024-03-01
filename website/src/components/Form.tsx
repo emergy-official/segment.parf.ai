@@ -1,119 +1,109 @@
-import { useState, useEffect } from "preact/hooks";
-import { sendPredictRequest, sendFeedbackRequest, getLatestFeedbacks, getRandomElement, startLambda } from "../utils";
-
-import { feedbacks, showFeedbackLoading } from "./../stores/feedbacks"
-
+import { useState, useEffect, useRef } from "preact/hooks";
+import { sendSegmentRequest, startLambda, getRandomElement } from "../utils";
+import ComparisonSlider from "./ComparisonSlider";
 export default function Form() {
 
-  const sampleArray = [
-    "Breaking: Nepal enters the super six of ongoing U-19 Men's World Cup after winning with Afghanistan by 1 wicket. ❤️🇳🇵 #Congrats",
-    "Yall see how they fake the screenshots when they get caught? #sad",
-    "The mirror is my best friend because when I cry 😭 it never laughs😂.",
-    "Behind every sweet smile, there is a bitter sadness that no one can ever see and feel...",
-    "In the first picture, I was in the midst of my pill addiction. I was lost, broken, and hopeless. The second picture is me today. I couldn’t be more grateful of where I am today.",
-    "When you are happy and don't give a sh*t about the world...",
-    "Good morning everyone happy Friday, hope the day is kind to you and those around you #FlowersOnFriday to cheer up a wet stormy day, taken last summer bathed in sunshine full of positive vibes 😊",
-    "I’M ACCEPTED FOR MY UNIVERSITY EXCHANGE IN TOKYO !!! (SOPHIA UNIVERSITY)",
-    "Happy Throwback Thursday Corgi-Family! Hope you’re well and having a great day today friend! Peace and Blessings 📸🐶💕✌🏻",
-    " TORNADO in KWAZULU-NATAL around 3pm",
-    "Our newsfeed is full of sadness today as this absolutely #devastating news broke.",
-    "It's truly devastating to witness the violence and bloodshed that disrupts peace and Kashmiriyat",
-    "if you can build such a team, you will attract the attention of the Eye on the Hill, you will need me in the neutral zone to defeat him!!! F.E.",
-    "Somewhere between emotional and emotionless"
+  const [lambdaStarted, setLambdaStarted] = useState(false);
+  const [image, setImage] = useState('');
+  const [mask, setMask] = useState('');
+  const [loading, setLoading] = useState(false);
+  const fileRef: any = useRef();
+
+  const sampleImages = [
+    "sample1.png",
+    "sample2.png",
+    "sample3.png",
+    "sample4.png",
+    "sample5.png",
+    "sample6.png",
+    "sample7.png",
+    "sample8.png",
+    "sample9.png",
   ]
 
-  const [text, setText] = useState(getRandomElement(sampleArray));
-  const [prediction, setPrediction] = useState(-1);
-  const [isStarted, setIsStarted] = useState(false);
 
-  const [loadingPrediction, setLoadingPrediction] = useState(false);
+  const triggerClick = () => {
+    fileRef.current.click()
+  }
+  const getImgToBase64 = async (imgPath: string) => {
+    try {
+      const response = await fetch(imgPath);
+      const blob = await response.blob(); // Convert the response to a blob  
 
-  const [loadingApproval, setLoadingApproval] = useState(false);
-  const [loadingRefusal, setLoadingRefusal] = useState(false);
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result); // Resolve the promise with the Base64 data  
+        reader.onerror = reject; // Reject the promise on error  
+        reader.readAsDataURL(blob); // Read the blob as Base64  
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      throw error; // Rethrow the error to handle it outside  
+    }
+  }
 
-  const [showFeedback, setShowFeedback] = useState(false);
+  const triggerClickRandom = async () => {
+    setLoading(true)
 
-  const isPositive = Math.round(prediction) == 1
-
+    const imgPath = `/samples/${getRandomElement(sampleImages)}` // e.g., "/public/samples/sample1.png"  
+    const imgBase64 = await getImgToBase64(imgPath)
+    processNewImage(imgBase64)
+  }
 
   useEffect(() => {
-    startLambda(isStarted, setIsStarted)
+    startLambda(lambdaStarted, setLambdaStarted)
   }, []);
 
-
-  const handleInput = (e: any) => {
-    const target = e.target as HTMLTextAreaElement;
-
-    setPrediction(-1)
-    setLoadingPrediction(false)
-    setLoadingRefusal(false)
-    setShowFeedback(false)
-    setText(target.value);
-  };
-
-  const handlePredictBtn = async () => {
-    setLoadingPrediction(true)
-    setShowFeedback(false)
-    const res = await sendPredictRequest(text)
-    if (res) {
-      setPrediction(res.segment)
+  const processNewImage = async (imgBase64) => {
+    setLoading(true)
+    setImage(imgBase64);
+    setMask("");
+    const res = await sendSegmentRequest(imgBase64.replace("data:image/png;base64,", ""))
+    if (res?.predictions?.predictions?.base64_image) {
+      console.log(res?.predictions?.predictions?.base64_image)
+      setMask(`data:image/png;base64,${res?.predictions?.predictions?.base64_image}`);
     }
-    setLoadingPrediction(false)
-  };
-
-  const handleFeedbackBtn = async (isPositive: boolean) => {
-    if (isPositive) {
-      setLoadingApproval(true)
-      await sendFeedbackRequest(text, prediction, isPositive)
-      setLoadingApproval(false)
-      setPrediction(-1)
-      setShowFeedback(true)
-      getLatestFeedbacks(feedbacks, showFeedbackLoading)
-      setText(getRandomElement(sampleArray))
-    } else {
-      setLoadingRefusal(true)
-      await sendFeedbackRequest(text, prediction, isPositive)
-      setLoadingRefusal(false)
-      setPrediction(-1)
-      setShowFeedback(true)
-      setText(getRandomElement(sampleArray))
+    setLoading(false)
+  }
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader: any = new FileReader();
+      reader.onloadend = async () => {
+        if (reader?.result) {
+          processNewImage(reader?.result)
+        }
+      };
+      reader.readAsDataURL(file);
     }
-
-    getLatestFeedbacks(feedbacks, showFeedbackLoading)
-
-
   };
 
   return (
     <div class="form">
-      <h1>Segment analyzer</h1>
-      <textarea onInput={handleInput} value={text} maxLength={280}></textarea>
-      {prediction == -1 ?
-        !isStarted ? 
-          <button class={`predict icon-visible flex`} disabled={true} >
-            <span>Initializing Service <i class="fa-solid fa-spinner-scale fa-spin-pulse"></i> (up to 1min to start) </span>
-          </button> :
-          <button class={`predict ${loadingPrediction ? "icon-visible" : ""}`} disabled={loadingPrediction} onClick={handlePredictBtn}>
-            {/* FontAwesome Hack */}
-            {loadingPrediction ? "" : "Predict"}
-            <i class="fa-solid fa-spinner-scale fa-spin-pulse"></i>
-          </button> :
-        <div class="prediction">
-          <span class={`prediction-value`}>
-            Text is {isPositive ? `positive` : `negative`} ({prediction})
-          </span>
-          <div class="feedback">
-            <button class={`agree ${loadingApproval ? "icon-visible" : ""}`} disabled={loadingApproval} onClick={() => { handleFeedbackBtn(true) }}>
-              {loadingApproval ? "" : "Correct"}
-              <i class="fa-solid fa-spinner-scale fa-spin-pulse"></i>
-            </button>
-            <button class={`disagree ${loadingRefusal ? "icon-visible" : ""}`} disabled={loadingRefusal} onClick={() => { handleFeedbackBtn(false) }}>
-              {loadingRefusal ? "" : "Incorrect"}
-              <i class="fa-solid fa-spinner-scale fa-spin-pulse"></i>
-            </button>
-          </div>
-        </div>}
-      {showFeedback ? <p>Thank you for your feedback!</p> : ""}
+      <h1>Semantic Segmentation</h1>
+      <div class="inputs">
+        <input ref={fileRef} type="file" id="file-input" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
+        <label htmlFor="file-input" class="btns">
+          <button disabled={loading} className={"predict"} onClick={triggerClick}>Click to segment an image</button>
+          <button disabled={loading} className={"predict"} onClick={triggerClickRandom}>Random</button>
+        </label>
+      </div>
+
+
+      {/* {mask && <img src={mask} alt="Uploaded preview" style={{ maxWidth: '512px', maxHeight: '400px' }} />}
+      {mask && (
+        <div style={{ position: 'relative' }}>
+          <img src={image} alt="Uploaded preview" style={{ maxWidth: '512px', maxHeight: '400px' }} />
+          <img
+            src={mask}
+            alt="Mask"
+            style={{ maxWidth: '512px', maxHeight: '400px', position: 'absolute', top: 0, left: 0, opacity: 0.5 }}
+          />
+        </div>
+      )} */}
+      {image && <ComparisonSlider topImage={image} bottomImage={mask} />}
+      {/* {image && <ComparisonSlider topImage={image} bottomImage={mask} />} */}
+
 
     </div>
   );

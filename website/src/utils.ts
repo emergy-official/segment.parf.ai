@@ -8,21 +8,6 @@ export const getRandomElement = (arr: any) => {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-export const getLatestFeedbacks = async (feedbackStore: any, showFeedbackLoading: any) => {
-    try {
-        showFeedbackLoading.set(true)
-        const res: any = await axios.get(`${getAPIURL()}/segment/feedback`)
-        if (res?.data?.items) {
-            feedbackStore.set(res?.data?.items)
-        }
-        showFeedbackLoading.set(false)
-    } catch (e) {
-        console.error("Error", e)
-        alert(`Error response of the feedback API ${e.message}`)
-        return null
-    }
-}
-
 export const startLambda = async (isStarted: any, setIsStarted: any) => {
     if (isStarted) return;
 
@@ -33,33 +18,33 @@ export const startLambda = async (isStarted: any, setIsStarted: any) => {
         try {
             console.log(`Attempt ${attempt}`)
             const timeout = attempt === 0 ? 180000 : 20000;
-            const res: any = await sendPredictRequest("any text here to start the lambda to improve speed for future request", true, timeout);
-            if (res?.segment > -1) {
+            const res: any = await sendSegmentPingRequest(true, timeout);
+            console.log(res)
+            if (res?.success) {
                 setIsStarted(true);
                 return;  // Successful, exit the function  
             }
         } catch (e) {
-
             console.error(`Attempt ${attempt + 1} failed. Error:`, e);
             if (attempt === maxAttempts - 1) {
                 alert(`Cannot initialize the service: ${e.message}`);
             }
-
         }
-
         attempt++;
     }
     return null;
 };
 
-export const sendPredictRequest = async (text: string, throwError: boolean = false, timeout: number = 180000) => {
+export const sendSegmentRequest = async (img_64: string, throwError: boolean = false, timeout: number = 180000) => {
     try {
+        console.log("SENDING")
         const res: any = await axios({
             method: "post",
             url: `${getAPIURL()}/segment`,
-            data: { text },
+            data: { base64: img_64 },
             timeout
         })
+
         return res?.data
     } catch (e) {
         if (throwError) {
@@ -71,14 +56,23 @@ export const sendPredictRequest = async (text: string, throwError: boolean = fal
         }
     }
 }
-
-export const sendFeedbackRequest = async (text: string, segment: number, feedback: boolean) => {
+export const sendSegmentPingRequest = async (throwError: boolean = false, timeout: number = 180000) => {
     try {
-        const res: any = await axios.post(`${getAPIURL()}/segment/feedback`, { text, segment, feedback })
+        console.log("Sending ping request")
+        const res: any = await axios({
+            method: "get",
+            url: `${getAPIURL()}/segment`,
+            timeout
+        })
+
         return res?.data
     } catch (e) {
-        console.error("Error", e)
-        alert(`Error response of the API ${e.message}`)
-        return null
+        if (throwError) {
+            throw e
+        } else {
+            console.error("Error", e)
+            alert(`Error response of the API ${e.message}`)
+            return null
+        }
     }
 }

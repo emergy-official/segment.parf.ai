@@ -16,8 +16,8 @@ env:
   ASSUME_ROLE_ARN_DEV: arn:aws:iam::267341338450:role/github-dev--segment
   ASSUME_ROLE_ARN_PROD: arn:aws:iam::258317103062:role/github-prod--segment
   WEBSITE_FOLDER: website
-  LAMBDA_FUNCTION_FEEDBACK: segment_feedback_api
-  FEEDBACK_API_FOLDER: api/feedback
+  LAMBDA_FUNCTION_FEEDBACK: segment_api
+  FEEDBACK_API_FOLDER: api/segment
 
 # Define permissions required for the action
 permissions:

@@ -7,7 +7,7 @@ const ComparisonSlider = ({ topImage, bottomImage }) => {
     const topImageRef: any = useRef();
     const handleRef: any = useRef();
 
-    const setPositioning = useCallback((x) => {
+    const setPositioning = useCallback((x: any) => {
         const { left, width } = topImageRef.current.getBoundingClientRect();
         const handleWidth = handleRef.current.offsetWidth;
 
@@ -19,7 +19,7 @@ const ComparisonSlider = ({ topImage, bottomImage }) => {
     }, []);
 
     const handleResize = useCallback(
-        (e) => {
+        (e: any) => {
             if (e.clientX) {
                 setPositioning(e.clientX);
             } else if (e.touches[0] && e.touches[0].clientX) {
@@ -47,7 +47,7 @@ const ComparisonSlider = ({ topImage, bottomImage }) => {
     }, [handleResize]);
 
     const onKeyDown = useCallback(
-        (e) => {
+        (e: any) => {
             const { offsetLeft, offsetParent } = handleRef.current;
 
             if (e.code === "ArrowLeft") {

@@ -47,14 +47,14 @@ export default function Form() {
 
     const imgPath = `/samples/${getRandomElement(sampleImages)}` // e.g., "/public/samples/sample1.png"  
     const imgBase64 = await getImgToBase64(imgPath)
-    processNewImage(imgBase64)
+    processNewImage(imgBase64 as string)
   }
 
   useEffect(() => {
     startLambda(lambdaStarted, setLambdaStarted)
   }, []);
 
-  const processNewImage = async (imgBase64) => {
+  const processNewImage = async (imgBase64: string) => {
     setLoading(true)
     setImage(imgBase64);
     setMask("");
@@ -65,7 +65,7 @@ export default function Form() {
     }
     setLoading(false)
   }
-  const handleFileChange = (event) => {
+  const handleFileChange = (event: any) => {
     const file = event.target.files[0];
     if (file) {
       const reader: any = new FileReader();

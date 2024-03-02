@@ -25,27 +25,32 @@ def iou(y_true, y_pred, smooth=1e-6):
 def read_image(base64_str):  
     img_bytes = base64.b64decode(base64_str)
     img_arr = np.frombuffer(img_bytes, dtype=np.uint8)      
-    x = cv2.imdecode(img_arr, cv2.IMREAD_COLOR)    
-    x = cv2.resize(x, (512, 256))  
+    origin_x = cv2.imdecode(img_arr, cv2.IMREAD_COLOR)
+    original_height, original_width = origin_x.shape[:2] 
+      
+    x = cv2.resize(origin_x, (512, 256))  
     x = x/255.0  
     x = x.astype(np.float32)  
     x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
-    return x  
+    return x, (original_height, original_width)
     
 def model_inference_with_display(model, base64_image):  
     # Load and preprocess the image  
-    image = read_image(base64_image)  
+    image, origin_size = read_image(base64_image) 
     image_to_predict = np.expand_dims(image, axis=0)
+    prediction = model.predict(image_to_predict)
+    predicted_mask = tf.argmax(prediction, axis=-1)[0].numpy()  
     
-    prediction = model.predict(image_to_predict)  
-    predicted_mask = tf.argmax(prediction, axis=-1)[0].numpy()  # Ensure it's a numpy array  
+    predicted_mask = tf.image.resize(predicted_mask[..., tf.newaxis], origin_size, method='nearest').numpy().astype(np.uint8)[:, :, 0]
+    
+    
+    # Ensure it's a numpy array
     predicted_mask_normalized = predicted_mask.astype('float32') / predicted_mask.max()  
     colored_mask = plt.get_cmap('viridis')(predicted_mask_normalized)[:, :, :3]  # Exclude alpha channel  
     colored_mask = (colored_mask * 255).astype(np.uint8)  # Convert back to 8-bit format  
-  
+    
    # Convert numpy array back to PIL image  
     mask_image = Image.fromarray(colored_mask)  
-      
     # Convert the PIL Image to a bytes object in PNG format  
     buffered = io.BytesIO()  
     mask_image.save(buffered, format="PNG")  

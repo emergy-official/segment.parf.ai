@@ -3,7 +3,7 @@ import base64
 import json  
   
 # The local path to your file
-file_path = './test.png'
+file_path = './test2.jpg'
 
 # The URL of your Flask API endpoint  
 url = 'http://127.0.0.1:8080/invocations'  

@@ -260,3 +260,10 @@ input[type="file"] {
 .btns button{
   margin: 10px 20px;
 }
+
+
+@media (max-width: 600px) {
+  * {
+    font-size: 0.8rem;
+  }
+}

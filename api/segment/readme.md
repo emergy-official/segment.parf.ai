@@ -1,65 +1,34 @@
-# Segment.parf.ai - Feedback API
+# Segment.parf.ai - Segment API
 
 ## Introduction
 
-The feedback API allows a user to improve the model over time to teach it what is correct/incorrect.  
+The segment API takes an image encoded in base64 as argument and returns the mask
 You can either get the latest 20 feedbacks or submit a feedback.
 
 This API is executed on AWS Lambda in the `NodeJS20.x` runtime.
-Using free tier, the first execution will take ~5sec time to start and will then stop after ~15min of inactiivty. (reserved concurrency lambda makes it always available for some $$)
+It calls the Sagemaker serverless inference endpoint.
 
-The response time should be ~200ms per request after coldstart.
+Using free tier, the first execution will take ~3sec time as well as ~10sec for the inference endpoint too (reserved concurrency lambda makes it always available for some $$)
+
+The response time should be ~2s per request after coldstart.
 
 ## API Usage example
 
 - Prod: https://segment.parf.ai/api
 - Dev: https://dev.segment.parf.ai/api
 
-### Get the latest 20 feedbacks
-
-```js
-const request = require("request");
-let options = {
-  method: "GET",
-  url: "https://dev.segment.parf.ai/api/segment/feedback",
-};
-request(options, (error, response) => {
-  if (error) throw new Error(error);
-  console.log(response.body);
-});
-```
-
-Response example
-
-```json
-{
-    "success": true,
-    "items": [
-        {
-            "text": "The mirror is my best friend because when I cry 😭 it never laughs😂.",
-            "timestamp": "1707494974834",
-            "segment": "0.9879910945892334",
-            "feedback": true
-        },
-        ...
-    ]
-}
-```
-
-### Post a feedback
+### Segment an image
 
 ```js
 const request = require("request");
 let options = {
   method: "POST",
-  url: "https://segment.parf.ai/api/segment/feedback",
+  url: "https://segment.parf.ai/api/segment",
   headers: {
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    text: "I am so sad, this is very bad news, terrible!",
-    segment: 0.88,
-    feedback: false,
+    base64: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
   }),
 };
 request(options, (error, response) => {
@@ -72,15 +41,20 @@ Response example
 
 ```json
 {
-  "success": true
+  "predictions": {
+    "base64_image": "...",
+    "polygons_json": {
+      "<cat>": [<pixelInt>]
+    },
+  }
 }
 ```
 
 ## How to test locally
 
 ```bash
-# Go within the feedback api
-cd api/feedback
+# Go within the segment api
+cd api/segment
 
 # Install dependencies (using pnpm or npm, yarn, ...)
 pnpm install
@@ -98,10 +72,10 @@ eval $(aws sts assume-role --profile $INFRA_ACCOUNT_ID --role-arn "arn:aws:iam::
 npm run test
 ```
 
-If you need to build the lambda layer for the infrastructure and push it locally
+If you need to build the lambda layer for the infrastructure and push it manually
 ```sh
-# Go within the feedback api
-cd api/feedback
+# Go within the segment api
+cd api/segment
 
 # Create the lambda layer ready to be used by terraform
 npm run prepare:layer
@@ -111,9 +85,8 @@ npm run prepare:layer
 
 **Scripts and Configuration Files**
 
-- **feedback.test.ts**: Unit test done within Github actions
+- **segment.test.ts**: Unit test
 - **getFeedbacks.ts**: Script to gather feedbacks within DynamoDB
-- **submitFeedback.ts**: Script to send a feedback of a text
 - **helper.ts**: Reusable functions to share accross other scripts.
 - **index.ts**: Script invoked by the API
 
@@ -121,3 +94,4 @@ npm run prepare:layer
 - **package.json**: Libraries used
 - **pnpm-lock.yaml**: By PNPM to reuse the same versions
 - **tsconfig.json**: Typescript config
+- **test.png**: Test image

@@ -1,24 +1,27 @@
-# Tag the image so you can push it to AWS ECR (private repo)
-docker tag mltest:latest "$ACCOUNT_ID".dkr.ecr.us-east-1.amazonaws.com/mltest:latest
+# Segment.parf.ai - Inference code
 
-# Push the image
-docker push "$ACCOUNT_ID".dkr.ecr.us-east-1.amazonaws.com/mltest:latest
+## Introduction
 
+This is the code use by the Sagemaker Inference endpoint.
 
-<script>  
+## How to test locally
 
-UPLOAD IMAGE
-    document.getElementById('upload-form').onsubmit = function(e){  
-        e.preventDefault();  
-        var formData = new FormData();  
-        var imageFile = document.getElementById('image-input').files[0];  
-        formData.append("file", imageFile);  
-        fetch('/invocations', {  
-            method: 'POST',  
-            body: formData,  
-        })  
-        .then(response => response.json())  
-        .then(data => console.log(data))  
-        .catch(error => console.error('Error:', error));  
-    };  
-</script>  
+```bash
+# Go within the inference code
+cd api/inference
+
+# Install dependencies
+conda create -p venv python=3.11.7 -y  
+conda activate venv/     
+pip install -r requirements.txt
+
+# Make sure you have a model.kears
+# Run the FLASK API
+FLASK_APP=app.py flask run --port=8080
+
+# On another terminal, test it
+python local.py
+
+# You can also test the inference endpoint if you have the credentials
+python local-to-sagemaker-inference.py
+```

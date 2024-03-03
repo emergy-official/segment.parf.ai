@@ -4,9 +4,7 @@
 
 ## Introduction
 
-This project analyze segment of a text and predict between 0 to 1 if a text is wether positive or negative.
-
-You can read [this blog post](https://blog.parf.ai/posts/segment/) to know more about it.
+This project demonstrate semantic segmentation of city street images.
 
 - **PROD**: https://segment.parf.ai/
 - **DEV**: https://dev.segment.parf.ai/

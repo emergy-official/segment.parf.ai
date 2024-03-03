@@ -2,27 +2,23 @@
 
 ## Introduction
 
-This API allows a user to get a segment prediction of a text (positive or negative).
+This API allows a user to get a segment an image.
 
 The user can:
 
-- Get the segment of a text
-- Submit a feedback if the model is correct/incorrect
-- Get the latest feedbacks
+- Get the segmentation of an city street image (it returns a base64 image segmented as well as the polygons pixels per categorie)
 
 This API is created as a sample project, do not use it within your projects.
-
-The API is built within Github actions, it is deployed automatically if the unit tests are valid [.github/workflows](./../.github/workflows/).
 
 ### Endpoints:
 
 - Prod: https://segment.parf.ai/api
 - Dev: https://dev.segment.parf.ai/api
 
-### Feedback (NodeJS)
+### API (NodeJS)
 
-- Check the readme within [api/feedback](./feedback/readme.md)
+- Check the readme within [api/segment](./segment/readme.md)
 
-### Segment (Python)
+### Inference code (Python)
 
-- Check the readme within  [api/segment](./segment/readme.md)
+- Check the readme within  [api/inference](./inference/readme.md)

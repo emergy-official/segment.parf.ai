@@ -39,5 +39,3 @@ venv
 artifacts
 *.h5
 *.keras
-inference/*.png
-inference/*.jpg

@@ -2,10 +2,11 @@ from flask import Flask, request, jsonify
 from werkzeug.middleware.proxy_fix import ProxyFix  
 import os  
 from inference import load_model, predict
-# from flask_cors import CORS # Import CORS  
-
 
 app = Flask(__name__)
+
+# If you run it locally you'll need this to allow a local webserver to call it
+# from flask_cors import CORS # Import CORS  
 # CORS(app) # Initialize CORS with default settings which allow all origins for all routes.  
 
 # Load the model by reading the `SM_MODEL_DIR` environment variable
@@ -17,7 +18,6 @@ model = load_model()
 app.wsgi_app = ProxyFix(
     app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
 )
-
 
 @app.route("/ping", methods=["GET"])
 def ping():

@@ -12,6 +12,6 @@ test('Segment image', async () => {
     const encodedString = fileBuffer.toString("base64");
     const response:any = await segmentImage(encodedString);
     // const body: any = JSON.parse(response.body)
-    expect(response?.predictions?.predictions?.base64_image?.length).toBeGreaterThan(0)
-    expect(Object.keys(response?.predictions?.predictions?.polygons_json)?.length).toBeGreaterThan(0)
+    expect(response?.predictions?.base64_image?.length).toBeGreaterThan(0)
+    expect(Object.keys(response?.predictions?.polygons_json)?.length).toBeGreaterThan(0)
 });

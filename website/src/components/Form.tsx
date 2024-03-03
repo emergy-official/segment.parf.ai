@@ -59,9 +59,9 @@ export default function Form() {
     setImage(imgBase64);
     setMask("");
     const res = await sendSegmentRequest(imgBase64.replace(/^data:image\/[a-zA-Z]+;base64,/, ""))
-    if (res?.predictions?.predictions?.base64_image) {
-      console.log(res?.predictions?.predictions?.base64_image)
-      setMask(`data:image/png;base64,${res?.predictions?.predictions?.base64_image}`);
+    if (res?.predictions?.base64_image) {
+      console.log(res?.predictions?.base64_image)
+      setMask(`data:image/png;base64,${res?.predictions?.base64_image}`);
     }
     setLoading(false)
   }

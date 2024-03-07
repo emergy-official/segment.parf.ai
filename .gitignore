@@ -39,3 +39,4 @@ venv
 artifacts
 *.h5
 *.keras
+input/
